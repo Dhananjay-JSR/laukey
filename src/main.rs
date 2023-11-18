@@ -1,16 +1,37 @@
+use std::fs;
+use std::path::Path;
 use std::process::exit;
 use axum::{routing::get, Router, ServiceExt};
 use simple_logger::SimpleLogger;
 use tokio::signal;
 use log::{info, trace, warn};
-use laukey::AppLayer;
+use laukey::{AppLayer, INDEX_PATH,INDEX_FOLDER};
+
 
 #[tokio::main]
  async fn main() {
-     // SimpleLogger::new().init().unwrap();
-   info!("Starting Laukey Instance"); // trace!("Commencing yak shaving");
+    simple_logger::init().unwrap();
+    info!("Starting Laukey Instance");
+    // fs::read_dir(INDEX_FOLDER)
+   if !Path::new(INDEX_FOLDER).exists() {
+
+      let FolderPath = Path::new(INDEX_FOLDER).join(INDEX_PATH);
+       match fs::create_dir_all(FolderPath) {
+           Ok(T)=>{
+               info!("Path Creation Successful")
+
+           }
+           Err(E)=> warn!("Unable to Create Path {}",E),
+       }
+   }else {
+       info!("Path Found Reusing Index Path")
+   }
+
+
     match axum::Server::try_bind(&"0.0.0.0:3000".parse().unwrap()){
         Ok(ServerBuilder) => {
+
+
             let App = AppLayer();
             ServerBuilder.serve(App.into_make_service()).with_graceful_shutdown(shutdown_signal())
                 .await
