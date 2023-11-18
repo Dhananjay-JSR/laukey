@@ -295,6 +295,8 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "log",
+ "serde",
+ "serde_json",
  "simple_logger",
  "tokio",
 ]

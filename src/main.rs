@@ -3,14 +3,16 @@ use axum::{routing::get, Router, ServiceExt};
 use simple_logger::SimpleLogger;
 use tokio::signal;
 use log::{info, trace, warn};
+use laukey::AppLayer;
+
 #[tokio::main]
  async fn main() {
-     SimpleLogger::new().init().unwrap();
+     // SimpleLogger::new().init().unwrap();
    info!("Starting Laukey Instance"); // trace!("Commencing yak shaving");
-    let app = Router::new().route("/", get(|| async { "Hello, World!" }));
     match axum::Server::try_bind(&"0.0.0.0:3000".parse().unwrap()){
         Ok(ServerBuilder) => {
-            ServerBuilder.serve(app.into_make_service()).with_graceful_shutdown(shutdown_signal())
+            let App = AppLayer();
+            ServerBuilder.serve(App.into_make_service()).with_graceful_shutdown(shutdown_signal())
                 .await
                 .unwrap();
         }
