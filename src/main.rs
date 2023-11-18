@@ -1,38 +1,33 @@
 use std::fs;
 use std::path::Path;
 use std::process::exit;
-use axum::{routing::get, Router, ServiceExt};
+use std::sync::Arc;
+use axum::{routing::get, Router, ServiceExt, Json};
+use axum::extract::State;
+use axum::routing::post;
 use simple_logger::SimpleLogger;
 use tokio::signal;
-use log::{info, trace, warn};
-use laukey::{AppLayer, INDEX_PATH,INDEX_FOLDER};
-
+use log::{debug, info, trace, warn};
+use tantivy::Index;
+use tantivy::schema::{Schema, STORED, STRING, TEXT};
+use laukey::{ INDEX_PATH, INDEX_FOLDER, IndexPathManager, engine_init, AppState, RouterCreation};
 
 #[tokio::main]
  async fn main() {
     simple_logger::init().unwrap();
+    IndexPathManager();
+    let (Index,Schema) = engine_init();
+    info!("Engine Initialisation Successful");
+    let shared_state = (AppState{
+        engine_schema:Schema,
+        engine_index:Index
+    });
     info!("Starting Laukey Instance");
-    // fs::read_dir(INDEX_FOLDER)
-   if !Path::new(INDEX_FOLDER).exists() {
-
-      let FolderPath = Path::new(INDEX_FOLDER).join(INDEX_PATH);
-       match fs::create_dir_all(FolderPath) {
-           Ok(T)=>{
-               info!("Path Creation Successful")
-
-           }
-           Err(E)=> warn!("Unable to Create Path {}",E),
-       }
-   }else {
-       info!("Path Found Reusing Index Path")
-   }
-
 
     match axum::Server::try_bind(&"0.0.0.0:3000".parse().unwrap()){
         Ok(ServerBuilder) => {
-
-
-            let App = AppLayer();
+            let App =RouterCreation(shared_state);
+            info!("Router Creation Successful");
             ServerBuilder.serve(App.into_make_service()).with_graceful_shutdown(shutdown_signal())
                 .await
                 .unwrap();
@@ -42,12 +37,10 @@ warn!("Unable to Bind Ports , Please Kill the Process Acquiring Port 3000 and Tr
             exit(1);
         }
     }
-    // build our application with a single route
-    // let app = Router::new().route("/", get(|| async { "Hello, World!" }));
-
 
 
 }
+
 
 
 async fn shutdown_signal() {
