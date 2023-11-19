@@ -60,9 +60,14 @@ pub fn RouterCreation(shared_state:AppState) -> Router {
 
 
     let app = Router::new()
-        .route("/", post(logs_injestor)).route("/search",get(SearchHandler)).route("/state",get(GetServerState)).layer(CorsLayer::new().allow_origin(Any)).with_state(shared_state);
+        .route("/", post(logs_injestor))
+        .route("/search",get(SearchHandler))
+        .route("/state",get(GetServerState))
+        .route("/adminpass",post(UpdateRootPass))
+        .layer(CorsLayer::new().allow_origin(Any)).with_state(shared_state);
     app
 }
+
 
 
 #[derive(Debug)]
@@ -71,6 +76,18 @@ struct Profiles {
     UserName: String,
     Password: String,
     FirstSetup:bool,
+}
+
+
+async fn UpdateRootPass(Json(payload):Json<serde_json::Value>){
+    #[derive(Serialize,Deserialize,Debug)]
+    struct AdminCred {
+        userName:String,
+        passWord:String
+    }
+
+    let AdminRequest:AdminCred = serde_json::from_value(payload).unwrap();
+    println!("{:?}",AdminRequest)
 }
 
 async fn GetServerState() -> Json<serde_json::Value> {
