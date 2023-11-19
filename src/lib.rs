@@ -8,9 +8,10 @@ use chrono::TimeZone;
 use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
-
+use std::collections::HashMap;
+use serde_json::json;
 use tantivy::collector::TopDocs;
-use tantivy::query::QueryParser;
+use tantivy::query::{BooleanQuery, Occur, QueryClone, QueryParser};
 use tantivy::schema::*;
 use tantivy::{Index, Opstamp, TantivyError};
 use tantivy::ReloadPolicy;
@@ -48,9 +49,132 @@ pub struct AppState {
 
 pub fn RouterCreation(shared_state:AppState) -> Router {
     let app = Router::new()
-        .route("/", post(logs_injestor)).with_state(shared_state);
+        .route("/", post(logs_injestor)).route("/search",get(SearchHandler)).with_state(shared_state);
     app
 }
+
+async fn SearchHandler(Query(params): Query<HashMap<String, String>>, State(state): State<AppState>)->Json<serde_json::Value>{
+    let StateLocal = state;
+    // Creates a Reader , Set Policy such that Reader Only Reloads On Writer Commit
+    let reader = StateLocal.engine_index.reader_builder().reload_policy(ReloadPolicy::OnCommit).try_into().unwrap();
+// acquire a searcher -> immutable version of the index.
+    let searcher = reader.searcher();
+    // Final JSON response
+    #[derive(Serialize, Deserialize,Debug)]
+    struct JSONResponse {
+        level: String,
+        message: String,
+        resourceId: String,
+        timestamp: String,
+        traceId:String,
+        spanId:String,
+        commit:String,
+        parentResourceId:String
+    }
+
+    // Result Storage
+    let mut ResultVec:Vec<JSONResponse> = vec![];
+
+    // Store All Querries
+    let mut QuerriesVec:Vec<Box<dyn tantivy::query::Query>> = vec![];
+
+    // Get Individual Querries Based on Params
+    if let Some(messageQuerry) = params.get("message"){
+        // Field to Querry
+        let messageFIeld = StateLocal.engine_schema.get_field("message").unwrap();
+        // Generate Parser
+        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+        // Evaluate Querry
+        let Localquery =query_parser.parse_query(messageQuerry).unwrap();
+        QuerriesVec.push(Localquery)
+   }
+
+    if let Some(levelQuerry) = params.get("level"){
+        let messageFIeld = StateLocal.engine_schema.get_field("level").unwrap();
+        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+        let Localquery =query_parser.parse_query(levelQuerry).unwrap();
+        QuerriesVec.push(Localquery)
+    }
+
+    if let Some(resourceIdQuerry) = params.get("resourceId"){
+        let messageFIeld = StateLocal.engine_schema.get_field("resourceId").unwrap();
+        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+        let Localquery =query_parser.parse_query(resourceIdQuerry).unwrap();
+        QuerriesVec.push(Localquery)
+    }
+
+    if let Some(traceIdQuerry) = params.get("traceId"){
+        let messageFIeld = StateLocal.engine_schema.get_field("traceId").unwrap();
+        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+        let Localquery =query_parser.parse_query(traceIdQuerry).unwrap();
+        QuerriesVec.push(Localquery)
+    }
+
+    if let Some(spanIdQuerry) = params.get("spanId"){
+        let messageFIeld = StateLocal.engine_schema.get_field("spanId").unwrap();
+        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+        let Localquery =query_parser.parse_query(spanIdQuerry).unwrap();
+        QuerriesVec.push(Localquery)
+    }
+
+    if let Some(commitQuerry) = params.get("commit"){
+        let messageFIeld = StateLocal.engine_schema.get_field("commit").unwrap();
+        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+        let Localquery =query_parser.parse_query(commitQuerry).unwrap();
+        QuerriesVec.push(Localquery)
+    }
+
+    if let Some(parentResourceIdQuerry) = params.get("parentResourceId"){
+        let messageFIeld = StateLocal.engine_schema.get_field("parentResourceId").unwrap();
+        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+        let Localquery =query_parser.parse_query(parentResourceIdQuerry).unwrap();
+        QuerriesVec.push(Localquery)
+    }
+    let BoooleanQuery = BooleanQuery::new(
+        QuerriesVec.iter().map(|value|{
+            (Occur::Must, value.box_clone())
+        }).collect()
+    );
+
+
+    let top_docs = searcher.search(&BoooleanQuery, &TopDocs::with_limit(10)).unwrap();
+
+    for (_score, doc_address) in top_docs {
+        // Temp Storage Struct
+        #[derive(Serialize, Deserialize,Debug)]
+        struct LocalResponse {
+            level: Vec<String>,
+            message: Vec<String>,
+            resourceId: Vec<String>,
+            timestamp: Vec<String>,
+            traceId:Vec<String>,
+            spanId:Vec<String>,
+            commit:Vec<String>,
+            parentResourceId:Vec<String>
+        }
+        // Flatten Result
+        let retrieved_doc = searcher.doc(doc_address).unwrap();
+        // COnvert to JSON serialized from STRING
+        let mut LocalResponseS:LocalResponse = serde_json::from_str(&StateLocal.engine_schema.to_json(&retrieved_doc)).unwrap();
+        //  Push to Result After Modification
+        ResultVec.push(JSONResponse{
+             level:LocalResponseS.level.join(""),
+             message:LocalResponseS.message.join(""),
+             parentResourceId:LocalResponseS.parentResourceId.join(""),
+             resourceId:LocalResponseS.resourceId.join(""),
+             commit:LocalResponseS.commit.join(""),
+             spanId:LocalResponseS.spanId.join(""),
+             traceId:LocalResponseS.traceId.join(""),
+             timestamp:LocalResponseS.timestamp.join(""),
+         })
+    }
+    // Send Response
+    Json(json!(ResultVec))
+}
+
+
+
+
 async fn logs_injestor(  State(state): State<AppState>,
                         Json(payload):Json<serde_json::Value>) {
     let mut payload_data:LogsTypes = serde_json::from_value(payload).unwrap();
@@ -94,7 +218,7 @@ fn FlushToEngine(EngineIndex:tantivy::Index, Schema:tantivy::schema::Schema, pay
                           LogDoc.add_text(parentResourceId,payload_data.metadata.parentResourceId);
                           LogDoc.add_text(UniqueIdentifier,Ulid::new().to_string());
     index_writer.add_document(LogDoc).expect("Unable to Add Document for Indexing");
-    info!("Adding DOcument Suucessfull");
+    info!("Adding Document Successful");
     index_writer.commit()
 }
 
