@@ -104,6 +104,8 @@ async fn LoginHandler(Json(payload): Json<serde_json::Value>) -> Json<serde_json
     // println!("{}",Test.len())
     if (Test.len() == 1) {
         return Json(json!({"login":true}));
+    }else {
+
     }
 
     // if (Test.len()==0){
@@ -120,7 +122,7 @@ async fn UpdateRootPass(Json(payload): Json<serde_json::Value>) -> Json<serde_js
 
 
     let Result = conn.execute(
-        "UPDATE Profiles SET Password = ?1 , FirstSetup = 0  WHERE UserName = 'admin' AND FirstSetup = 1",
+        "UPDATE Profiles SET Password = ?1 , FirstSetup = 1  WHERE UserName = 'admin' AND FirstSetup = 1",
         (&AdminRequest.passWord, ),
     ).unwrap();
     // println!("TESTSTSTST");
@@ -140,7 +142,7 @@ async fn UpdateRootPass(Json(payload): Json<serde_json::Value>) -> Json<serde_js
 
 async fn GetServerState() -> Json<serde_json::Value> {
     let conn = Connection::open(std::path::Path::new(INDEX_FOLDER).join("data.db")).unwrap();
-    let mut stmt = conn.prepare("SELECT UserName, Password, FirstSetup FROM Profiles WHERE UserName = 'admin' AND FirstSetup = 1").unwrap();
+    let mut stmt = conn.prepare("SELECT UserName, Password, FirstSetup FROM Profiles WHERE UserName = 'admin' AND FirstSetup = 1 AND Password= 'admin'").unwrap();
     let User_Iter = stmt.query_map([], |row| {
         Ok(Profiles {
             UserName: row.get(0).unwrap(),

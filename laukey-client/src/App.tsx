@@ -67,8 +67,23 @@ function App() {
                         </div>
                     </>}
                     <button onClick={() => {
+                        if (loginScreenType == "SET_PASS") {
+                            // alert(RootPasword)
 
-                        if (firstTime) {
+                            axios.post("http://localhost:3000/adminpass", {
+                                userName: userNameInput,
+                                passWord: RootPasword
+                            }).then((d) => {
+                                if (d.data.statusCode == 200) {
+                                    alert("Request Accepted Please Use New Password to Login")
+                                    window.location.reload()
+                                    return
+                                } else {
+                                    alert("Unknown Error Occurred")
+                                }
+                            })
+
+                        }else  if (firstTime) {
                             if (userNameInput == "admin" || userPasswordInput == "admin") {
 
                                 if (loginScreenType == "CRED_ENTER") {
@@ -77,22 +92,7 @@ function App() {
                                     setFirstTime(false)
                                 }
 
-                                if (loginScreenType == "SET_PASS") {
-                                    // alert(RootPasword)
 
-                                    axios.post("http://localhost:3000/adminpass", {
-                                        userName: userNameInput,
-                                        passWord: RootPasword
-                                    }).then((d) => {
-                                        if (d.data.statusCode == 200) {
-                                            alert("Request Accepted Please Use New Password to Login")
-                                            window.location.reload()
-                                        } else {
-                                            alert("Unknown Error Occurred")
-                                        }
-                                    })
-
-                                }
 
                                 // setScreenType(prev=>"DASHBOARD")
                             }
@@ -103,6 +103,7 @@ function App() {
                                 passWord: userPasswordInput
                             }).then((d) => {
                                 if (d.data.login == true) {
+                                    // alert("Password Updated Login With New Credential")
                                     setScreenType("DASHBOARD")
                                 } else {
                                     alert("Wrong Credential")
