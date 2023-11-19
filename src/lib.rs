@@ -9,6 +9,7 @@ use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 use std::collections::HashMap;
+use axum::http::Method;
 use rusqlite::Connection;
 use serde_json::json;
 use tantivy::collector::TopDocs;
@@ -64,8 +65,9 @@ pub fn RouterCreation(shared_state:AppState) -> Router {
         .route("/", post(logs_injestor))
         .route("/search",get(SearchHandler))
         .route("/state",get(GetServerState))
+        .route("/login",post(LoginHandler))
         .route("/adminpass",post(UpdateRootPass))
-        .layer(CorsLayer::new().allow_origin(Any)).with_state(shared_state);
+        .layer(CorsLayer::permissive()).with_state(shared_state);
     app
 }
 
@@ -79,21 +81,73 @@ struct Profiles {
     FirstSetup:bool,
 }
 
+#[derive(Serialize,Deserialize,Debug)]
+struct AdminCred {
+    userName:String,
+    passWord:String
+}
 
-async fn UpdateRootPass(Json(payload):Json<serde_json::Value>){
-    #[derive(Serialize,Deserialize,Debug)]
-    struct AdminCred {
-        userName:String,
-        passWord:String
+async fn LoginHandler(Json(payload):Json<serde_json::Value>)->Json<serde_json::Value>{
+    struct LocalProfiles {
+        // UserID: i32,
+        UserName: String,
+        Password: String,
+    }
+    let conn = Connection::open(std::path::Path::new(INDEX_FOLDER).join("data.db")).unwrap();
+    let AdminRequest:AdminCred = serde_json::from_value(payload).unwrap();
+    let mut stmt = conn.prepare("SELECT UserName, Password FROM Profiles WHERE UserName = ?1 AND Password = ?2 ").unwrap();
+    let User_Iter = stmt.query_map([AdminRequest.userName,AdminRequest.passWord],|row|{
+        Ok(LocalProfiles{
+            UserName:row.get(0).unwrap(),
+            Password:row.get(1).unwrap(),
+        })
+    }).unwrap();
+    let MappedValue = User_Iter.map(|User|User.unwrap());
+    let Test:Vec<LocalProfiles> = MappedValue.collect();
+    // println!("{}",Test.len())
+    if (Test.len()==1){
+        return Json(json!({"login":true}))
     }
 
+    // if (Test.len()==0){
+        Json(json!({"login":false}))
+    // }
+}
+
+
+async fn UpdateRootPass(Json(payload):Json<serde_json::Value>)->Json<serde_json::Value>{
+    let conn = Connection::open(std::path::Path::new(INDEX_FOLDER).join("data.db")).unwrap();
+
+
+
+
+
     let AdminRequest:AdminCred = serde_json::from_value(payload).unwrap();
-    println!("{:?}",AdminRequest)
+
+
+
+   let Result = conn.execute(
+        "UPDATE Profiles SET Password = ?1 , FirstSetup = 0  WHERE UserName = 'admin' AND FirstSetup = 1",
+        (&AdminRequest.passWord,),
+    ).unwrap();
+    // println!("TESTSTSTST");
+
+if (Result==1){
+    Json(json!({
+        "message": "accepted",
+        "statusCode":200
+    }))
+}else{
+    Json(json!({
+        "message": "unknown",
+        "statusCode":400
+    }))
+}
 }
 
 async fn GetServerState() -> Json<serde_json::Value> {
     let conn = Connection::open(std::path::Path::new(INDEX_FOLDER).join("data.db")).unwrap();
-    let mut stmt = conn.prepare("SELECT UserName, Password, FirstSetup FROM Profiles").unwrap();
+    let mut stmt = conn.prepare("SELECT UserName, Password, FirstSetup FROM Profiles WHERE UserName = 'admin' AND FirstSetup = 1").unwrap();
     let User_Iter = stmt.query_map([],|row|{
         Ok(Profiles{
             UserName:row.get(0).unwrap(),

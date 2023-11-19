@@ -1,13 +1,20 @@
 import {useEffect, useState} from 'react'
 import axios from "axios";
-function ISODateString(d:Date){
-    function pad(n:number){return n<10 ? '0'+n : n}
-    return d.getUTCFullYear()+'-'
-        + pad(d.getUTCMonth()+1)+'-'
-        + pad(d.getUTCDate())+'T'
-        + pad(d.getUTCHours())+':'
-        + pad(d.getUTCMinutes())+':'
-        + pad(d.getUTCSeconds())+'Z'}
+
+function ISODateString(d: Date) {
+    function pad(n: number) {
+        return n < 10 ? '0' + n : n
+    }
+
+    return d.getUTCFullYear() + '-'
+        + pad(d.getUTCMonth() + 1) + '-'
+        + pad(d.getUTCDate()) + 'T'
+        + pad(d.getUTCHours()) + ':'
+        + pad(d.getUTCMinutes()) + ':'
+        + pad(d.getUTCSeconds()) + 'Z'
+}
+
+
 function App() {
     const [firstTime, setFirstTime] = useState(true)
     const [userNameInput, setUserNameInput] = useState("")
@@ -25,56 +32,86 @@ function App() {
     return (
         <>
             <div className={"min-h-screen bg-neutral-900 w-full flex "}>
-                {/*{screenType=="LOGIN" && <div className={"w-96 h-64   rounded mx-auto bg-black  my-auto text-white"}>*/}
-                {/*    <div className={"text-white text-center mt-3 font-semibold"}>Welcome to Laukey Dashboard</div>*/}
-                {/*    {false &&*/}
-                {/*        <div className={"text-xs mt-2 text-center"}>System Will Go Through First Time Setup</div>}*/}
+                {screenType=="LOGIN" && <div className={"w-96 h-64   rounded mx-auto bg-black  my-auto text-white"}>
+                    <div className={"text-white text-center mt-3 font-semibold"}>Welcome to Laukey Dashboard</div>
+                    {loginScreenType!="CRED_ENTER"&&firstTime &&
+                        <div className={"text-xs mt-2 text-center"}>System Will Go Through First Time Setup</div>}
 
-                {/*    {loginScreenType == "CRED_ENTER" ? <div className={"mx-auto mt-8 w-fit"}>*/}
-                {/*        <div className={"mt-3 mx-auto"}>*/}
-                {/*            <span className={"mr-2"}>UserName</span><input value={userNameInput} onChange={(e) => {*/}
-                {/*            let UserName = e.currentTarget.value*/}
-                {/*            setUserNameInput(prev => UserName)*/}
-                {/*        }} className={"bg-neutral-700 px-2"}/>*/}
-                {/*        </div>*/}
-                {/*        <div className={"mt-3 mx-auto flex justify-between"}>*/}
-                {/*            <span className={"mr-2"}>Password</span><input value={userPasswordInput} onChange={(e) => {*/}
-                {/*            let UserPass = e.currentTarget.value*/}
-                {/*            setUserPasswordInput(prev => UserPass)*/}
-                {/*        }} className={"bg-neutral-700 px-2"}/>*/}
-                {/*        </div>*/}
-                {/*        {firstTime &&*/}
-                {/*            <h2 className={"text-xs mt-4  text-center"}>Login with Default credential admin / admin</h2>}*/}
-                {/*    </div> : <>*/}
-                {/*        <div className={"mx-auto mt-8 w-fit"}>*/}
-                {/*            <div className={"mt-3 mx-auto"}>*/}
-                {/*                <div className={"text-center  mb-3"}>Enter New Admin Password</div>*/}
-                {/*                <span className={"mr-2"}>Root Password</span><input value={RootPasword} onChange={(e) => {*/}
-                {/*                let RootPasswordInput = e.currentTarget.value*/}
-                {/*                setRootPassword(prev => RootPasswordInput)*/}
-                {/*            }} className={"bg-neutral-700 px-2"}/>*/}
-                {/*            </div>*/}
-                {/*        </div>*/}
-                {/*    </>}*/}
+                    {loginScreenType == "CRED_ENTER" ? <div className={"mx-auto mt-8 w-fit"}>
+                        <div className={"mt-3 mx-auto"}>
+                            <span className={"mr-2"}>UserName</span><input value={userNameInput} onChange={(e) => {
+                            let UserName = e.currentTarget.value
+                            setUserNameInput(prev => UserName)
+                        }} className={"bg-neutral-700 px-2"}/>
+                        </div>
+                        <div className={"mt-3 mx-auto flex justify-between"}>
+                            <span className={"mr-2"}>Password</span><input value={userPasswordInput} onChange={(e) => {
+                            let UserPass = e.currentTarget.value
+                            setUserPasswordInput(prev => UserPass)
+                        }} className={"bg-neutral-700 px-2"}/>
+                        </div>
+                        {firstTime &&
+                            <h2 className={"text-xs mt-4  text-center"}>Login with Default credential admin / admin</h2>}
+                    </div> : <>
+                        <div className={"mx-auto mt-8 w-fit"}>
+                            <div className={"mt-3 mx-auto"}>
+                                <div className={"text-center  mb-3"}>Enter New Admin Password</div>
+                                <span className={"mr-2"}>Root Password</span><input value={RootPasword} onChange={(e) => {
+                                let RootPasswordInput = e.currentTarget.value
+                                setRootPassword(prev => RootPasswordInput)
+                            }} className={"bg-neutral-700 px-2"}/>
+                            </div>
+                        </div>
+                    </>}
+                    <button onClick={() => {
 
+                        if (firstTime) {
+                            if (userNameInput == "admin" || userPasswordInput == "admin") {
 
-                {/*    <button onClick={() => {*/}
+                                if (loginScreenType=="CRED_ENTER"){
 
-                {/*        if (firstTime) {*/}
-                {/*            if (userNameInput == "admin" || userPasswordInput == "admin") {*/}
-                {/*                // setLoginScreenType("SET_PASS")*/}
-                {/*                // setFirstTime(false)*/}
-                {/*                setScreenType(prev=>"DASHBOARD")*/}
-                {/*            }*/}
-                {/*            // axios.post("http://localhost:3000/adminpass")*/}
-                {/*        }*/}
-                {/*    }} className={"bg-amber-700 px-3 py-1 rounded  block mx-auto mt-3"}>*/}
-                {/*        Login*/}
-                {/*    </button>*/}
+                                setLoginScreenType("SET_PASS")
+                                setFirstTime(false)
+                                }
 
-                {/*</div>}*/}
+                                if (loginScreenType=="SET_PASS"){
+                                    // alert(RootPasword)
 
-                <QuerryDashboard/>
+                                    axios.post("http://localhost:3000/adminpass",{
+                                        userName:userNameInput,
+                                        passWord:RootPasword
+                                    }).then((d)=>{
+                                        if (d.data.statusCode==200){
+                                            alert("Request Accepted Please Use New Password to Login")
+                                            window.location.reload()
+                                        }else{
+                                            alert("Unknown Error Occurred")
+                                        }
+                                    })
+
+                                }
+
+                                // setScreenType(prev=>"DASHBOARD")
+                            }
+                            // axios.post("http://localhost:3000/adminpass")
+                        }else {
+                        axios.post("http://localhost:3000/login",{
+                            userName:userNameInput,
+                            passWord:userPasswordInput
+                        }).then((d)=>{
+                            if (d.data.login==true){
+                                setScreenType("DASHBOARD")
+                            }else{
+                                alert("Wrong Credential")
+                            }
+                        })
+                        }
+                    }} className={"bg-amber-700 px-3 py-1 rounded  block mx-auto mt-3"}>
+                        Login
+                    </button>
+
+                </div>}
+                {screenType=="DASHBOARD"&&<QuerryDashboard/>}
 
             </div>
         </>
@@ -111,41 +148,39 @@ function QuerryDashboard() {
     }, [selectEdFilters]);
 
     return <div className={"w-full"}>
-        <div className={"bg-neutral-900 h-[450px] max-h-full w-[600px] mx-auto mt-8 relative"}>
+        <div className={"bg-neutral-900 h-[450px] max-h-full w-[650px] mx-auto mt-8 relative"}>
             <div className={"text-white text-center underline"}>Querry Interface</div>
             <div className={"mx-auto w-fit mt-5"}>
-<div className={"mx-auto flex justify-center"}>
-                <select value={selectedOption} onChange={(e) => {
-                    let SelectedOption = e.currentTarget.value
-                    setSelectedOption(prev => SelectedOption)
-                }}>
-                    <option disabled>Select Querry</option>
-                    {["Level", "Message", "ResourceId", "Timestamp", "TraceId", "SpanId", "Commit", "ParentResourceId"].filter(e => !selectEdFilters.includes(e)).map((e) =>
-                        <option value={e}>{e}</option>)}
-                </select>
-                <button className={"ml-3 bg-amber-300  px-3 "} onClick={() => {
-                    if (selectedOption != "Select Querry") {
+                <div className={"mx-auto flex justify-center"}>
+                    <select value={selectedOption} onChange={(e) => {
+                        let SelectedOption = e.currentTarget.value
+                        setSelectedOption(prev => SelectedOption)
+                    }}>
+                        <option disabled>Select Querry</option>
+                        {["Level", "Message", "ResourceId", "Timestamp", "TraceId", "SpanId", "Commit", "ParentResourceId"].filter(e => !selectEdFilters.includes(e)).map((e) =>
+                            <option value={e}>{e}</option>)}
+                    </select>
+                    <button className={"ml-3 bg-amber-300  px-3 "} onClick={() => {
+                        if (selectedOption != "Select Querry") {
 
-                        setSelectedFilter(prev => {
+                            setSelectedFilter(prev => {
 
-                            return [...prev, selectedOption]
-                        })
+                                return [...prev, selectedOption]
+                            })
+                        }
+                    }}>Add
+                    </button>
 
-
-                    }
-                }}>Add
-                </button>
-
-</div>
+                </div>
 
                 <div className={"mt-4"}>
                     {selectEdFilters.includes("Level") && <>
                         <div className={"flex gap-3"}>
 
                             <div className={"text-white w-36"}>Level</div>
-                            <input value={LevelQuerry} onChange={(e)=>{
+                            <input value={LevelQuerry} onChange={(e) => {
                                 let Value = e.currentTarget.value
-                                setLevelQuerry(prev=>Value)
+                                setLevelQuerry(prev => Value)
                             }}/>
                             <button className={"bg-white px-2"} onClick={() => {
                                 setSelectedFilter(prev => prev.filter((e) => e != "Level"))
@@ -160,9 +195,9 @@ function QuerryDashboard() {
                             <div className={"flex gap-3 mt-5"}>
 
                                 <div className={"text-white w-36"}>Message</div>
-                                <input value={MessageQuerry} onChange={(e)=>{
+                                <input value={MessageQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setMessageQuerry(prev=>Value)
+                                    setMessageQuerry(prev => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "Message"))
@@ -171,15 +206,13 @@ function QuerryDashboard() {
                                 </button>
                             </div>
                         </>}
-
-
                         {selectEdFilters.includes("ResourceId") && <>
                             <div className={"flex gap-3 mt-5"}>
 
                                 <div className={"text-white w-36"}>ResourceId</div>
-                                <input value={ResourceIDQuerry} onChange={(e)=>{
+                                <input value={ResourceIDQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setResourceIDQuerry(prev=>Value)
+                                    setResourceIDQuerry(prev => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "ResourceId"))
@@ -188,43 +221,37 @@ function QuerryDashboard() {
                                 </button>
                             </div>
                         </>}
-
-
-
-
                         {selectEdFilters.includes("Timestamp") && <>
                             <div className={"flex gap-3 mt-5 items-baseline"}>
 
                                 <div className={"text-white w-36"}>Timestamp</div>
                                 <div className={"flex gap-2 items-baseline"}>
-                                <input type={"date"} value={FromTimeStamp}  onChange={(e)=>{
-                                    let Value = e.currentTarget.value
-                                    setFromTimeStamp(prev=>Value)
-                                }}/>
-                                <input type={"date"} value={ToTimeStamp} onChange={(e)=>{
-                                    let Value = e.currentTarget.value
-                                    setToTimeStamp(prevState => Value)
-                                }}/>
+                                    <input type={"datetime-local"} value={FromTimeStamp} onChange={(e) => {
+                                        let Value = e.currentTarget.value
+                                        setFromTimeStamp(prev => Value)
+                                    }}/>
+                                    <input type={"datetime-local"} value={ToTimeStamp} onChange={(e) => {
+                                        let Value = e.currentTarget.value
+                                        setToTimeStamp(prevState => Value)
+                                    }}/>
                                 </div>
                                 <button className={"bg-white px-2 items-baseline"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "ResourceId"))
-                                    setToTimeStamp(prev=>"")
-                                    setFromTimeStamp(prev=>"")
+                                    setToTimeStamp(prev => "")
+                                    setFromTimeStamp(prev => "")
                                 }}>Remove Filter
                                 </button>
                             </div>
                         </>}
 
 
-
-
                         {selectEdFilters.includes("TraceId") && <>
                             <div className={"flex gap-3 mt-5"}>
 
                                 <div className={"text-white w-36"}>TraceId</div>
-                                <input value={TraceIDQuerry} onChange={(e)=>{
+                                <input value={TraceIDQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setTraceIDQuerry(prev=>Value)
+                                    setTraceIDQuerry(prev => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "TraceId"))
@@ -239,9 +266,9 @@ function QuerryDashboard() {
                             <div className={"flex gap-3 mt-5"}>
 
                                 <div className={"text-white w-36"}>SpanId</div>
-                                <input value={SpanQuerry}  onChange={(e)=>{
+                                <input value={SpanQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setSpanQuerry(prev=>SpanQuerry)
+                                    setSpanQuerry(prev => SpanQuerry)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "SpanId"))
@@ -256,10 +283,10 @@ function QuerryDashboard() {
                             <div className={"flex gap-3 mt-5"}>
 
                                 <div className={"text-white w-36"}>Commit</div>
-                                <input value={CommitQuerry} onChange={(e)=>{
+                                <input value={CommitQuerry} onChange={(e) => {
                                     let value = e.currentTarget.value
-                                    setCommitQuerry(prev=>value)
-                                }} />
+                                    setCommitQuerry(prev => value)
+                                }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "Commit"))
                                     setCommitQuerry("")
@@ -273,9 +300,9 @@ function QuerryDashboard() {
                             <div className={"flex gap-3 mt-5"}>
 
                                 <div className={"text-white w-36"}>ParentResourceId</div>
-                                <input value={ParentResourceQuerry} onChange={(e)=>{
+                                <input value={ParentResourceQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setParentResourceQuerry(prev=>Value)
+                                    setParentResourceQuerry(prev => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "ParentResourceId"))
@@ -293,68 +320,68 @@ function QuerryDashboard() {
             </div>
 
             {selectEdFilters.length > 0 &&
-                <button onClick={(e)=>{
-                    let BodyParams:{
-                        level?:string,
-                        message?:string,
-                        resourceId?:string,
-                        timestamp?:string,
-                        traceId?:string,
-                        spanId?:string,
-                        commit?:string,
-                        parentResourceId?:string
+                <button onClick={(e) => {
+                    let BodyParams: {
+                        level?: string,
+                        message?: string,
+                        resourceId?: string,
+                        timestamp?: string,
+                        traceId?: string,
+                        spanId?: string,
+                        commit?: string,
+                        parentResourceId?: string
                     } = {};
-                    if (LevelQuerry!=""){
+                    if (LevelQuerry != "") {
                         BodyParams.level = LevelQuerry
                     }
-                    if (MessageQuerry!=""){
+                    if (MessageQuerry != "") {
                         BodyParams.message = MessageQuerry
                     }
-                    if (ResourceIDQuerry!=""){
+                    if (ResourceIDQuerry != "") {
                         BodyParams.resourceId = ResourceIDQuerry
                     }
 
-                    if (FromTimeStamp!=""){
-                        if (ToTimeStamp!=""){
+                    if (FromTimeStamp != "") {
+                        if (ToTimeStamp != "") {
                             BodyParams.timestamp = `${ISODateString(new Date(FromTimeStamp))} TO ${ISODateString(new Date(ToTimeStamp))}`
-                        }else {
+                        } else {
                             BodyParams.timestamp = `${ISODateString(new Date(FromTimeStamp))} TO ${ISODateString(new Date())}`
                         }
                     }
 
-                    if (TraceIDQuerry!=""){
+                    if (TraceIDQuerry != "") {
                         BodyParams.traceId = TraceIDQuerry
                     }
-                    if (SpanQuerry!=""){
+                    if (SpanQuerry != "") {
                         BodyParams.spanId = SpanQuerry
                     }
 
-                    if (CommitQuerry!=""){
+                    if (CommitQuerry != "") {
                         BodyParams.commit = CommitQuerry
                     }
-                    if (ParentResourceQuerry!=""){
+                    if (ParentResourceQuerry != "") {
                         BodyParams.parentResourceId = ParentResourceQuerry
                     }
 
                     console.log(BodyParams)
                     setIsLoading(true)
-                    axios.get("http://localhost:3000/search",{
-                        params:BodyParams
-                    }).then((d)=>{
+                    axios.get("http://localhost:3000/search", {
+                        params: BodyParams
+                    }).then((d) => {
                         setIsLoading(false)
-                        setResponseData(prev=>d)
+                        setResponseData(prev => d)
                     })
-
 
 
                 }} className={"absolute bottom-0 left-1/2 -translate-x-1/2 bg-red-100  px-2 rounded  mb-3"}>Run
                     Querry</button>}
         </div>
-        {isLoading&&<div className={"text-white animate-pulse text-center"}>Loading ...</div>}
-        {ResponseData!=null&& <div className={"text-teal-100 text-center"}>Logs Returned {ResponseData.data.length}</div>}
-        {ResponseData!=null&& <pre className={"mx-auto ml-4"}>
+        {isLoading && <div className={"text-white animate-pulse text-center"}>Loading ...</div>}
+        {ResponseData != null &&
+            <div className={"text-teal-100 text-center"}>Logs Returned {ResponseData.data.length}</div>}
+        {ResponseData != null && <pre className={"mx-auto ml-4"}>
 <code className={"text-white"}>
-    {JSON.stringify(ResponseData.data,null,2)}
+    {JSON.stringify(ResponseData.data, null, 2)}
 
 </code>
 
