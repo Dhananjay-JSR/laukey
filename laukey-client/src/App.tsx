@@ -32,9 +32,9 @@ function App() {
     return (
         <>
             <div className={"min-h-screen bg-neutral-900 w-full flex "}>
-                {screenType=="LOGIN" && <div className={"w-96 h-64   rounded mx-auto bg-black  my-auto text-white"}>
+                {screenType == "LOGIN" && <div className={"w-96 h-64   rounded mx-auto bg-black  my-auto text-white"}>
                     <div className={"text-white text-center mt-3 font-semibold"}>Welcome to Laukey Dashboard</div>
-                    {loginScreenType!="CRED_ENTER"&&firstTime &&
+                    {loginScreenType != "CRED_ENTER" && firstTime &&
                         <div className={"text-xs mt-2 text-center"}>System Will Go Through First Time Setup</div>}
 
                     {loginScreenType == "CRED_ENTER" ? <div className={"mx-auto mt-8 w-fit"}>
@@ -51,15 +51,18 @@ function App() {
                         }} className={"bg-neutral-700 px-2"}/>
                         </div>
                         {firstTime &&
-                            <h2 className={"text-xs mt-4  text-center"}>Login with Default credential admin / admin</h2>}
+                            <h2 className={"text-xs mt-4  text-center"}>Login with Default credential admin /
+                                admin</h2>}
                     </div> : <>
                         <div className={"mx-auto mt-8 w-fit"}>
                             <div className={"mt-3 mx-auto"}>
                                 <div className={"text-center  mb-3"}>Enter New Admin Password</div>
-                                <span className={"mr-2"}>Root Password</span><input value={RootPasword} onChange={(e) => {
-                                let RootPasswordInput = e.currentTarget.value
-                                setRootPassword(prev => RootPasswordInput)
-                            }} className={"bg-neutral-700 px-2"}/>
+                                <span className={"mr-2"}>Root Password</span><input value={RootPasword}
+                                                                                    onChange={(e) => {
+                                                                                        let RootPasswordInput = e.currentTarget.value
+                                                                                        setRootPassword(prev => RootPasswordInput)
+                                                                                    }}
+                                                                                    className={"bg-neutral-700 px-2"}/>
                             </div>
                         </div>
                     </>}
@@ -68,23 +71,23 @@ function App() {
                         if (firstTime) {
                             if (userNameInput == "admin" || userPasswordInput == "admin") {
 
-                                if (loginScreenType=="CRED_ENTER"){
+                                if (loginScreenType == "CRED_ENTER") {
 
-                                setLoginScreenType("SET_PASS")
-                                setFirstTime(false)
+                                    setLoginScreenType("SET_PASS")
+                                    setFirstTime(false)
                                 }
 
-                                if (loginScreenType=="SET_PASS"){
+                                if (loginScreenType == "SET_PASS") {
                                     // alert(RootPasword)
 
-                                    axios.post("http://localhost:3000/adminpass",{
-                                        userName:userNameInput,
-                                        passWord:RootPasword
-                                    }).then((d)=>{
-                                        if (d.data.statusCode==200){
+                                    axios.post("http://localhost:3000/adminpass", {
+                                        userName: userNameInput,
+                                        passWord: RootPasword
+                                    }).then((d) => {
+                                        if (d.data.statusCode == 200) {
                                             alert("Request Accepted Please Use New Password to Login")
                                             window.location.reload()
-                                        }else{
+                                        } else {
                                             alert("Unknown Error Occurred")
                                         }
                                     })
@@ -94,24 +97,24 @@ function App() {
                                 // setScreenType(prev=>"DASHBOARD")
                             }
                             // axios.post("http://localhost:3000/adminpass")
-                        }else {
-                        axios.post("http://localhost:3000/login",{
-                            userName:userNameInput,
-                            passWord:userPasswordInput
-                        }).then((d)=>{
-                            if (d.data.login==true){
-                                setScreenType("DASHBOARD")
-                            }else{
-                                alert("Wrong Credential")
-                            }
-                        })
+                        } else {
+                            axios.post("http://localhost:3000/login", {
+                                userName: userNameInput,
+                                passWord: userPasswordInput
+                            }).then((d) => {
+                                if (d.data.login == true) {
+                                    setScreenType("DASHBOARD")
+                                } else {
+                                    alert("Wrong Credential")
+                                }
+                            })
                         }
                     }} className={"bg-amber-700 px-3 py-1 rounded  block mx-auto mt-3"}>
                         Login
                     </button>
 
                 </div>}
-                {screenType=="DASHBOARD"&&<QuerryDashboard/>}
+                {screenType == "DASHBOARD" && <QuerryDashboard/>}
 
             </div>
         </>
