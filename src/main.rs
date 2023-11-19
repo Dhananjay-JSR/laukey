@@ -1,10 +1,11 @@
 use std::path::Path;
 use std::process::exit;
 
-use axum::ServiceExt;
+use axum::{Router, ServiceExt};
 use log::{info, warn};
 use rusqlite::Connection;
 use tokio::signal;
+use tower_http::services::ServeDir;
 
 use laukey::{AppState, engine_init, INDEX_FOLDER, IndexPathManager, RouterCreation};
 
@@ -51,18 +52,42 @@ async fn main() {
     // let Results=  conn.execute(query,()).unwrap();
 
 
-    let (Index, Schema) = engine_init();
+
     info!("Engine Initialisation Successful");
+
+    info!("Starting Laukey Instance");
+    tokio::join!(
+ServeBackend(),ServerClient()
+    );
+
+}
+
+async fn ServerClient(){
+    match axum::Server::try_bind(&"0.0.0.0:3001".parse().unwrap()) {
+        Ok(ServerBuilder) => {
+            let App = Router::new().nest_service("/",ServeDir::new(Path::new("laukey-client").join("dist")));
+            info!("Frontend Router Creation Successful");
+            ServerBuilder.serve(App.into_make_service()).with_graceful_shutdown(shutdown_signal())
+                .await
+                .unwrap();
+        }
+        Err(E) => {
+            warn!("Unable to Bind Ports , Please Kill the Process Acquiring Port 3001 and Try again");
+            exit(1);
+        }
+    }
+}
+
+async fn ServeBackend(){
+    let (Index, Schema) = engine_init();
     let shared_state = (AppState {
         engine_schema: Schema,
         engine_index: Index,
     });
-    info!("Starting Laukey Instance");
-
     match axum::Server::try_bind(&"0.0.0.0:3000".parse().unwrap()) {
         Ok(ServerBuilder) => {
             let App = RouterCreation(shared_state);
-            info!("Router Creation Successful");
+            info!("Backend Router Creation Successful");
             ServerBuilder.serve(App.into_make_service()).with_graceful_shutdown(shutdown_signal())
                 .await
                 .unwrap();

@@ -9,7 +9,7 @@
 <hr/>
 <ul>
 <li>
-Axum Hanldes Routing Logic , Any Response That Hits Port 3000 in desired Format gets Stored It
+Axum Handlers Routing Logic , Any Response That Hits Port 3000 in desired Format gets Stored It
 
 </li>
 <li>

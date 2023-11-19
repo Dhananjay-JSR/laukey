@@ -24,7 +24,7 @@ function App() {
     const [RootPasword, setRootPassword] = useState("")
     useEffect(() => {
         axios.get("http://localhost:3000/state").then((d) => {
-            setFirstTime(prev => d.data.newSetup)
+            setFirstTime(() => d.data.newSetup)
         })
     }, [])
 
@@ -41,13 +41,13 @@ function App() {
                         <div className={"mt-3 mx-auto"}>
                             <span className={"mr-2"}>UserName</span><input value={userNameInput} onChange={(e) => {
                             let UserName = e.currentTarget.value
-                            setUserNameInput(prev => UserName)
+                            setUserNameInput(() => UserName)
                         }} className={"bg-neutral-700 px-2"}/>
                         </div>
                         <div className={"mt-3 mx-auto flex justify-between"}>
                             <span className={"mr-2"}>Password</span><input value={userPasswordInput} onChange={(e) => {
                             let UserPass = e.currentTarget.value
-                            setUserPasswordInput(prev => UserPass)
+                            setUserPasswordInput(() => UserPass)
                         }} className={"bg-neutral-700 px-2"}/>
                         </div>
                         {firstTime &&
@@ -60,7 +60,7 @@ function App() {
                                 <span className={"mr-2"}>Root Password</span><input value={RootPasword}
                                                                                     onChange={(e) => {
                                                                                         let RootPasswordInput = e.currentTarget.value
-                                                                                        setRootPassword(prev => RootPasswordInput)
+                                                                                        setRootPassword(() => RootPasswordInput)
                                                                                     }}
                                                                                     className={"bg-neutral-700 px-2"}/>
                             </div>
@@ -140,14 +140,14 @@ function QuerryDashboard() {
     const [ParentResourceQuerry, setParentResourceQuerry] = useState("")
     // Request Handler
     const [isLoading, setIsLoading] = useState(false)
-    const [ResponseData, setResponseData] = useState(null)
+    const [ResponseData, setResponseData] = useState<any>(null)
 
 
     useEffect(() => {
         if (selectedOption == "Select Querry") {
             return;
         }
-        setSelectedOption(prev => ["Level", "Message", "ResourceId", "Timestamp", "TraceId", "SpanId", "Commit", "ParentResourceId"].filter(e => !selectEdFilters.includes(e))[0] ?? "Select Querry")
+        setSelectedOption(() => ["Level", "Message", "ResourceId", "Timestamp", "TraceId", "SpanId", "Commit", "ParentResourceId"].filter(e => !selectEdFilters.includes(e))[0] ?? "Select Querry")
     }, [selectEdFilters]);
 
     return <div className={"w-full"}>
@@ -157,7 +157,7 @@ function QuerryDashboard() {
                 <div className={"mx-auto flex justify-center"}>
                     <select value={selectedOption} onChange={(e) => {
                         let SelectedOption = e.currentTarget.value
-                        setSelectedOption(prev => SelectedOption)
+                        setSelectedOption(() => SelectedOption)
                     }}>
                         <option disabled>Select Querry</option>
                         {["Level", "Message", "ResourceId", "Timestamp", "TraceId", "SpanId", "Commit", "ParentResourceId"].filter(e => !selectEdFilters.includes(e)).map((e) =>
@@ -183,7 +183,7 @@ function QuerryDashboard() {
                             <div className={"text-white w-36"}>Level</div>
                             <input value={LevelQuerry} onChange={(e) => {
                                 let Value = e.currentTarget.value
-                                setLevelQuerry(prev => Value)
+                                setLevelQuerry(() => Value)
                             }}/>
                             <button className={"bg-white px-2"} onClick={() => {
                                 setSelectedFilter(prev => prev.filter((e) => e != "Level"))
@@ -200,7 +200,7 @@ function QuerryDashboard() {
                                 <div className={"text-white w-36"}>Message</div>
                                 <input value={MessageQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setMessageQuerry(prev => Value)
+                                    setMessageQuerry(() => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "Message"))
@@ -215,7 +215,7 @@ function QuerryDashboard() {
                                 <div className={"text-white w-36"}>ResourceId</div>
                                 <input value={ResourceIDQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setResourceIDQuerry(prev => Value)
+                                    setResourceIDQuerry(() => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "ResourceId"))
@@ -231,17 +231,17 @@ function QuerryDashboard() {
                                 <div className={"flex gap-2 items-baseline"}>
                                     <input type={"datetime-local"} value={FromTimeStamp} onChange={(e) => {
                                         let Value = e.currentTarget.value
-                                        setFromTimeStamp(prev => Value)
+                                        setFromTimeStamp(() => Value)
                                     }}/>
                                     <input type={"datetime-local"} value={ToTimeStamp} onChange={(e) => {
                                         let Value = e.currentTarget.value
-                                        setToTimeStamp(prevState => Value)
+                                        setToTimeStamp(() => Value)
                                     }}/>
                                 </div>
                                 <button className={"bg-white px-2 items-baseline"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "ResourceId"))
-                                    setToTimeStamp(prev => "")
-                                    setFromTimeStamp(prev => "")
+                                    setToTimeStamp(() => "")
+                                    setFromTimeStamp(() => "")
                                 }}>Remove Filter
                                 </button>
                             </div>
@@ -254,7 +254,7 @@ function QuerryDashboard() {
                                 <div className={"text-white w-36"}>TraceId</div>
                                 <input value={TraceIDQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setTraceIDQuerry(prev => Value)
+                                    setTraceIDQuerry(() => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "TraceId"))
@@ -271,7 +271,7 @@ function QuerryDashboard() {
                                 <div className={"text-white w-36"}>SpanId</div>
                                 <input value={SpanQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setSpanQuerry(prev => SpanQuerry)
+                                    setSpanQuerry(() => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "SpanId"))
@@ -288,7 +288,7 @@ function QuerryDashboard() {
                                 <div className={"text-white w-36"}>Commit</div>
                                 <input value={CommitQuerry} onChange={(e) => {
                                     let value = e.currentTarget.value
-                                    setCommitQuerry(prev => value)
+                                    setCommitQuerry(() => value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "Commit"))
@@ -305,7 +305,7 @@ function QuerryDashboard() {
                                 <div className={"text-white w-36"}>ParentResourceId</div>
                                 <input value={ParentResourceQuerry} onChange={(e) => {
                                     let Value = e.currentTarget.value
-                                    setParentResourceQuerry(prev => Value)
+                                    setParentResourceQuerry(() => Value)
                                 }}/>
                                 <button className={"bg-white px-2"} onClick={() => {
                                     setSelectedFilter(prev => prev.filter((e) => e != "ParentResourceId"))
@@ -323,7 +323,7 @@ function QuerryDashboard() {
             </div>
 
             {selectEdFilters.length > 0 &&
-                <button onClick={(e) => {
+                <button onClick={() => {
                     let BodyParams: {
                         level?: string,
                         message?: string,
@@ -372,7 +372,8 @@ function QuerryDashboard() {
                         params: BodyParams
                     }).then((d) => {
                         setIsLoading(false)
-                        setResponseData(prev => d)
+                        // @ts-ignore
+                        setResponseData(() => d)
                     })
 
 
@@ -380,7 +381,7 @@ function QuerryDashboard() {
                     Querry</button>}
         </div>
         {isLoading && <div className={"text-white animate-pulse text-center"}>Loading ...</div>}
-        {ResponseData != null &&
+        {ResponseData != null &&(ResponseData.data!=undefined) &&
             <div className={"text-teal-100 text-center"}>Logs Returned {ResponseData.data.length}</div>}
         {ResponseData != null && <pre className={"mx-auto ml-4"}>
 <code className={"text-white"}>
