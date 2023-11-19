@@ -9,12 +9,15 @@ use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 use std::collections::HashMap;
+use rusqlite::Connection;
 use serde_json::json;
 use tantivy::collector::TopDocs;
 use tantivy::query::{BooleanQuery, Occur, QueryClone, QueryParser};
 use tantivy::schema::*;
 use tantivy::{Index, Opstamp, TantivyError};
 use tantivy::ReloadPolicy;
+use tower_http::cors::{Any, CorsLayer};
+
 // use tempfile::TempDir;
 
 
@@ -48,9 +51,46 @@ pub struct AppState {
 }
 
 pub fn RouterCreation(shared_state:AppState) -> Router {
+
+    // let cors = CorsLayer::new()
+    //     // allow `GET` and `POST` when accessing the resource
+    //     .allow_methods(vec![Method::GET, Method::POST])
+    //     // allow requests from any origin
+    //     .allow_origin(any());
+
+
     let app = Router::new()
-        .route("/", post(logs_injestor)).route("/search",get(SearchHandler)).with_state(shared_state);
+        .route("/", post(logs_injestor)).route("/search",get(SearchHandler)).route("/state",get(GetServerState)).layer(CorsLayer::new().allow_origin(Any)).with_state(shared_state);
     app
+}
+
+
+#[derive(Debug)]
+struct Profiles {
+    // UserID: i32,
+    UserName: String,
+    Password: String,
+    FirstSetup:bool,
+}
+
+async fn GetServerState() -> Json<serde_json::Value> {
+    let conn = Connection::open(std::path::Path::new(INDEX_FOLDER).join("data.db")).unwrap();
+    let mut stmt = conn.prepare("SELECT UserName, Password, FirstSetup FROM Profiles").unwrap();
+    let User_Iter = stmt.query_map([],|row|{
+        Ok(Profiles{
+            UserName:row.get(0).unwrap(),
+            Password:row.get(1).unwrap(),
+            FirstSetup:row.get(2).unwrap()
+        })
+    }).unwrap();
+  let MappedValue = User_Iter.map(|User|User.unwrap());
+    let Test:Vec<Profiles> = MappedValue.collect();
+    // println!("{}",)
+    if (Test.len()==1){
+        Json(json!({"newSetup":true}))
+    }else {
+        Json(json!({"newSetup":false}))
+    }
 }
 
 async fn SearchHandler(Query(params): Query<HashMap<String, String>>, State(state): State<AppState>)->Json<serde_json::Value>{
