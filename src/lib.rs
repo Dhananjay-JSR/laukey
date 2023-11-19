@@ -15,6 +15,7 @@ use tantivy::collector::TopDocs;
 use tantivy::query::{BooleanQuery, Occur, QueryClone, QueryParser};
 use tantivy::schema::*;
 use tantivy::{Index, Opstamp, TantivyError};
+use tantivy::columnar::ColumnType::DateTime;
 use tantivy::ReloadPolicy;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -135,58 +136,77 @@ async fn SearchHandler(Query(params): Query<HashMap<String, String>>, State(stat
     // Store All Querries
     let mut QuerriesVec:Vec<Box<dyn tantivy::query::Query>> = vec![];
 
-    // Get Individual Querries Based on Params
-    if let Some(messageQuerry) = params.get("message"){
-        // Field to Querry
-        let messageFIeld = StateLocal.engine_schema.get_field("message").unwrap();
-        // Generate Parser
-        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
-        // Evaluate Querry
-        let Localquery =query_parser.parse_query(messageQuerry).unwrap();
-        QuerriesVec.push(Localquery)
-   }
 
-    if let Some(levelQuerry) = params.get("level"){
-        let messageFIeld = StateLocal.engine_schema.get_field("level").unwrap();
+    if let Some(TimeStampQuerry) = params.get("timestamp"){
+             let messageFIeld = StateLocal.engine_schema.get_field("timestamp").unwrap();
         let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
-        let Localquery =query_parser.parse_query(levelQuerry).unwrap();
-        QuerriesVec.push(Localquery)
+            // if TimeStampQuerry.contains("TO"){
+                let TimeQueryString =  "timestamp:[".to_string()+TimeStampQuerry+"]";
+                let Localquery =query_parser.parse_query(&TimeQueryString).unwrap();
+                QuerriesVec.push(Localquery)
+            // }else {
+            //     let DateString = "timestamp:\"".to_string()+  TimeStampQuerry+ "\"";
+            //     let Localquery =query_parser.parse_query(&DateString).unwrap();
+            //     QuerriesVec.push(Localquery)
+            //
+            // }
     }
 
-    if let Some(resourceIdQuerry) = params.get("resourceId"){
-        let messageFIeld = StateLocal.engine_schema.get_field("resourceId").unwrap();
-        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
-        let Localquery =query_parser.parse_query(resourceIdQuerry).unwrap();
-        QuerriesVec.push(Localquery)
-    }
 
-    if let Some(traceIdQuerry) = params.get("traceId"){
-        let messageFIeld = StateLocal.engine_schema.get_field("traceId").unwrap();
-        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
-        let Localquery =query_parser.parse_query(traceIdQuerry).unwrap();
-        QuerriesVec.push(Localquery)
-    }
-
-    if let Some(spanIdQuerry) = params.get("spanId"){
-        let messageFIeld = StateLocal.engine_schema.get_field("spanId").unwrap();
-        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
-        let Localquery =query_parser.parse_query(spanIdQuerry).unwrap();
-        QuerriesVec.push(Localquery)
-    }
-
-    if let Some(commitQuerry) = params.get("commit"){
-        let messageFIeld = StateLocal.engine_schema.get_field("commit").unwrap();
-        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
-        let Localquery =query_parser.parse_query(commitQuerry).unwrap();
-        QuerriesVec.push(Localquery)
-    }
-
-    if let Some(parentResourceIdQuerry) = params.get("parentResourceId"){
-        let messageFIeld = StateLocal.engine_schema.get_field("parentResourceId").unwrap();
-        let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
-        let Localquery =query_parser.parse_query(parentResourceIdQuerry).unwrap();
-        QuerriesVec.push(Localquery)
-    }
+   //  // Get Individual Querries Based on Params
+   //  if let Some(messageQuerry) = params.get("message"){
+   //      // Field to Querry
+   //      let messageFIeld = StateLocal.engine_schema.get_field("message").unwrap();
+   //      // Generate Parser
+   //      let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+   //      // Evaluate Querry
+   //      let Localquery =query_parser.parse_query(messageQuerry).unwrap();
+   //      QuerriesVec.push(Localquery)
+   // }
+   //
+   //
+   //
+   //  if let Some(levelQuerry) = params.get("level"){
+   //      let messageFIeld = StateLocal.engine_schema.get_field("level").unwrap();
+   //      let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+   //      let Localquery =query_parser.parse_query(levelQuerry).unwrap();
+   //      QuerriesVec.push(Localquery)
+   //  }
+   //
+   //  if let Some(resourceIdQuerry) = params.get("resourceId"){
+   //      let messageFIeld = StateLocal.engine_schema.get_field("resourceId").unwrap();
+   //      let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+   //      let Localquery =query_parser.parse_query(resourceIdQuerry).unwrap();
+   //      QuerriesVec.push(Localquery)
+   //  }
+   //
+   //  if let Some(traceIdQuerry) = params.get("traceId"){
+   //      let messageFIeld = StateLocal.engine_schema.get_field("traceId").unwrap();
+   //      let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+   //      let Localquery =query_parser.parse_query(traceIdQuerry).unwrap();
+   //      QuerriesVec.push(Localquery)
+   //  }
+   //
+   //  if let Some(spanIdQuerry) = params.get("spanId"){
+   //      let messageFIeld = StateLocal.engine_schema.get_field("spanId").unwrap();
+   //      let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+   //      let Localquery =query_parser.parse_query(spanIdQuerry).unwrap();
+   //      QuerriesVec.push(Localquery)
+   //  }
+   //
+   //  if let Some(commitQuerry) = params.get("commit"){
+   //      let messageFIeld = StateLocal.engine_schema.get_field("commit").unwrap();
+   //      let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+   //      let Localquery =query_parser.parse_query(commitQuerry).unwrap();
+   //      QuerriesVec.push(Localquery)
+   //  }
+   //
+   //  if let Some(parentResourceIdQuerry) = params.get("parentResourceId"){
+   //      let messageFIeld = StateLocal.engine_schema.get_field("parentResourceId").unwrap();
+   //      let query_parser = QueryParser::for_index(&StateLocal.engine_index,vec![messageFIeld]);
+   //      let Localquery =query_parser.parse_query(parentResourceIdQuerry).unwrap();
+   //      QuerriesVec.push(Localquery)
+   //  }
     let BoooleanQuery = BooleanQuery::new(
         QuerriesVec.iter().map(|value|{
             (Occur::Must, value.box_clone())
@@ -307,7 +327,10 @@ pub  fn engine_init() -> (Index, Schema) {
     schema_builder.add_text_field("level",STRING|STORED);
     schema_builder.add_text_field("message",TEXT|STORED);
     schema_builder.add_text_field("resourceId",TEXT|STORED);
-    schema_builder.add_date_field("timestamp",STORED);
+    schema_builder.add_date_field("timestamp",tantivy::schema::DateOptions::from(INDEXED)
+        .set_stored()
+        .set_fast()
+        .set_precision(tantivy::DateTimePrecision::Seconds));
     schema_builder.add_text_field("traceId",STRING|STORED);
     schema_builder.add_text_field("spanId",STRING|STORED);
     schema_builder.add_text_field("commit",STRING|STORED);

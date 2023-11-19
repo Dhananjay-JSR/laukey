@@ -1,6 +1,13 @@
 import {useEffect, useState} from 'react'
 import axios from "axios";
-
+function ISODateString(d:Date){
+    function pad(n:number){return n<10 ? '0'+n : n}
+    return d.getUTCFullYear()+'-'
+        + pad(d.getUTCMonth()+1)+'-'
+        + pad(d.getUTCDate())+'T'
+        + pad(d.getUTCHours())+':'
+        + pad(d.getUTCMinutes())+':'
+        + pad(d.getUTCSeconds())+'Z'}
 function App() {
     const [firstTime, setFirstTime] = useState(true)
     const [userNameInput, setUserNameInput] = useState("")
@@ -291,6 +298,7 @@ function QuerryDashboard() {
                         level?:string,
                         message?:string,
                         resourceId?:string,
+                        timestamp?:string,
                         traceId?:string,
                         spanId?:string,
                         commit?:string,
@@ -306,6 +314,14 @@ function QuerryDashboard() {
                         BodyParams.resourceId = ResourceIDQuerry
                     }
 
+                    if (FromTimeStamp!=""){
+                        if (ToTimeStamp!=""){
+                            BodyParams.timestamp = `${ISODateString(new Date(FromTimeStamp))} TO ${ISODateString(new Date(ToTimeStamp))}`
+                        }else {
+                            BodyParams.timestamp = `${ISODateString(new Date(FromTimeStamp))} TO ${ISODateString(new Date())}`
+                        }
+                    }
+
                     if (TraceIDQuerry!=""){
                         BodyParams.traceId = TraceIDQuerry
                     }
@@ -319,6 +335,8 @@ function QuerryDashboard() {
                     if (ParentResourceQuerry!=""){
                         BodyParams.parentResourceId = ParentResourceQuerry
                     }
+
+                    console.log(BodyParams)
                     setIsLoading(true)
                     axios.get("http://localhost:3000/search",{
                         params:BodyParams

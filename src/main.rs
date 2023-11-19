@@ -16,6 +16,7 @@ use laukey::{ INDEX_PATH, INDEX_FOLDER, IndexPathManager, engine_init, AppState,
 #[tokio::main]
  async fn main() {
     simple_logger::init().unwrap();
+    IndexPathManager();
     let conn = Connection::open(Path::new(INDEX_FOLDER).join("data.db")).unwrap();
 
     conn.execute(
@@ -56,7 +57,7 @@ use laukey::{ INDEX_PATH, INDEX_FOLDER, IndexPathManager, engine_init, AppState,
     // let Results=  conn.execute(query,()).unwrap();
 
 
-    IndexPathManager();
+
     let (Index,Schema) = engine_init();
     info!("Engine Initialisation Successful");
     let shared_state = (AppState{
